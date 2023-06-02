@@ -19,6 +19,9 @@ void ALockAndKey::CheckActorType(AActor* OverlappedActor, AActor* OtherActor)
 		OpenTheDoor();
 }
 
+/// <summary>
+/// Opens the door
+/// </summary>
 void ALockAndKey::OpenTheDoor()
 {
 	this->Destroy();

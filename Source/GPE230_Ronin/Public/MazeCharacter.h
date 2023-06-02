@@ -31,9 +31,14 @@ private:
 		float moveSpeed;
 	UPROPERTY(EditAnywhere)
 		float rotationSpeed;
+	UPROPERTY(EditAnywhere)
+		float jumpForce;
+	UPROPERTY(EditAnywhere)
+		bool isJumping;
 
 private:
 	void MoveFB(float value);
 	void MoveLR(float value);
 	void Rotate(float value);
+	void Jump();
 };
