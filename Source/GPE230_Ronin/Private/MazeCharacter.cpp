@@ -15,7 +15,52 @@ AMazeCharacter::AMazeCharacter()
 void AMazeCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	_currentHealth = maxHealth;
+}
+
+/// <summary>
+/// Function allows for character to take damage
+/// </summary>
+/// <param name="DamageAmount"></param>
+/// <param name="DamageEvent"></param>
+/// <param name="EventInstigator"></param>
+/// <param name="DamageCauser"></param>
+/// <returns></returns>
+float AMazeCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (!_isDead)
+	{
+		// Subtract the incoming damage
+		_currentHealth -= DamageAmount;
+
+		UE_LOG(LogTemp, Log, TEXT("Player took %f damage. %f health remaining."), DamageAmount, _currentHealth);
+
+		if (_currentHealth <= 0)
+		{
+			Die();
+		}
+
+		return DamageAmount;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/// <summary>
+/// Removes all control from the player and activates game over state
+/// </summary>
+void AMazeCharacter::Die()
+{
+	_isDead = true;
+	_moveSpeed = 0;
+	_rotationSpeed = 0;
+	_jumpForce = 0;
+
+	GetMesh()->PlayAnimation(_deathAnim, false);
+
+	// ToDo: Trigger game over state and prompt the player to restart the level
 }
 
 // Called every frame
@@ -27,7 +72,7 @@ void AMazeCharacter::Tick(float DeltaTime)
 	if (!GetCharacterMovement()->IsFalling())
 	{
 		// Player character has landed on the ground
-		isJumping = false;
+		_isJumping = false;
 	}
 }
 
@@ -38,7 +83,7 @@ void AMazeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAxis(TEXT("MoveFB"), this, &AMazeCharacter::MoveFB);
 	PlayerInputComponent->BindAxis(TEXT("MoveLR"), this, &AMazeCharacter::MoveLR);
-	PlayerInputComponent->BindAxis(TEXT("Rotate"), this, &AMazeCharacter::Rotate);
+	PlayerInputComponent->BindAxis(TEXT("RotateYaw"), this, &AMazeCharacter::RotateYaw);
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &AMazeCharacter::Jump);
 }
 
@@ -48,7 +93,7 @@ void AMazeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 /// <param name="value"></param>
 void AMazeCharacter::MoveFB(float value)
 {
-	AddMovementInput(GetActorForwardVector(), value * moveSpeed);
+	AddMovementInput(GetActorForwardVector(), value * _moveSpeed);
 }
 
 /// <summary>
@@ -57,16 +102,16 @@ void AMazeCharacter::MoveFB(float value)
 /// <param name="value"></param>
 void AMazeCharacter::MoveLR(float value)
 {
-	AddMovementInput(-GetActorRightVector(), value * moveSpeed);
+	AddMovementInput(-GetActorRightVector(), value * _moveSpeed);
 }
 
 /// <summary>
-/// Rotational movement
+/// Rotational movement of yaw
 /// </summary>
 /// <param name="value"></param>
-void AMazeCharacter::Rotate(float value)
+void AMazeCharacter::RotateYaw(float value)
 {
-	AddControllerYawInput(value * rotationSpeed);
+	AddControllerYawInput(value * _rotationSpeed);
 }
 
 /// <summary>
@@ -74,10 +119,10 @@ void AMazeCharacter::Rotate(float value)
 /// </summary>
 void AMazeCharacter::Jump()
 {
-	if (!isJumping)
+	if (!_isJumping)
 	{
-		isJumping = true;
-		LaunchCharacter(FVector(0.0f, 0.0f, jumpForce), false, true);
+		_isJumping = true;
+		LaunchCharacter(FVector(0.0f, 0.0f, _jumpForce), false, true);
 	}
 }
 
